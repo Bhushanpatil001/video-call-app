@@ -1,21 +1,27 @@
 const express = require('express');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const socketIo = require('socket.io');
 const cors = require('cors');
 
+// Load SSL credentials
+const privateKey = fs.readFileSync('path/to/your/private-key.pem', 'utf8');
+const certificate = fs.readFileSync('path/to/your/certificate.crt', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 
+// Initialize Express app
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
-
 app.use(cors());
+app.use(express.static('public'));
+
+// Create HTTPS server on port 4000
+const httpsServer = https.createServer(credentials, app);
+const io = socketIo(httpsServer);
+
 const rooms = {};
 const users = {};
 
-// Serve static files
-app.use(express.static('public'));
-
-// Socket.io
+// Socket.io handling
 io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
 
@@ -56,7 +62,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// Start Server
-server.listen(4000, () => {
-    console.log('Server running on port 4000');
+// Start HTTPS Server on port 4000
+httpsServer.listen(4000, () => {
+    console.log('Server running on https://localhost:4000');
 });
