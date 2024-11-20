@@ -40,22 +40,30 @@ io.on('connection', (socket) => {
 
 
     // Join Room
-socket.on('joinRoom', (roomId) => {
-    // Use socket.id as the userId
-    const userId = socket.id;
-    console.log(`${userId} joined room ${roomId}`);
+    // socket.on('joinRoom', (roomId) => {
+    //     // Use socket.id as the userId
+    //     const userId = socket.id;
+    //     console.log(`${userId} joined room ${roomId}`);
 
-    if (!rooms[roomId]) {
-        rooms[roomId] = [];
-    }
-    rooms[roomId].push(userId);
-    socket.join(roomId);  // Join the room
-    console.log("users", users);
-    console.log("rooms", rooms);
+    //     if (!rooms[roomId]) {
+    //         rooms[roomId] = [];
+    //     }
+    //     rooms[roomId].push(userId);
+    //     socket.join(roomId);  // Join the room
+    //     console.log("users", users);
+    //     console.log("rooms", rooms);
 
-    // You can optionally emit back to the client the list of users in the room if needed
-    socket.emit('joinedRoom', roomId, userId);  // Inform the client they've joined
-});
+    //     // You can optionally emit back to the client the list of users in the room if needed
+    //     socket.emit('joinedRoom', roomId, userId);  // Inform the client they've joined
+    // });
+
+
+    socket.on('joinRoom', (roomId) => {
+        if (!rooms[roomId]) rooms[roomId] = [];
+        if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
+        socket.join(roomId);
+        console.log(`${socket.id} rejoined room ${roomId}`);
+    });
 
     // Handle WebRTC Signaling
     socket.on('offer', (roomId, userId, offer) => {
@@ -72,8 +80,11 @@ socket.on('joinRoom', (roomId) => {
 
     // Disconnect
     socket.on('disconnect', () => {
-        console.log(`${socket.id} disconnected`);
-        delete users[socket.id];
+    console.log(`${socket.id} disconnected`);
+        Object.keys(rooms).forEach((roomId) => {
+            rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
+        });
+    delete users[socket.id];
     });
 });
 

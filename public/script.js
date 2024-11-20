@@ -42,24 +42,65 @@ window.addEventListener("offline", updateNetworkStatus);
 
 
 // Attempt to reconnect
-function reconnect() {
+async function reconnect() {
     if (!isConnected) {
         console.log("Attempting to reconnect...");
         socket.connect(); // Reconnect the Socket.IO client
+
+        // Reinitialize WebRTC peer connection
+        if (localStream) {
+            peerConnection = new RTCPeerConnection(config);
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            // Handle new ICE candidates
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('iceCandidate', roomId, userId, event.candidate);
+                }
+            };
+
+            // Handle remote tracks
+            peerConnection.ontrack = (event) => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+
+            // Renegotiate the session
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
+            socket.emit('offer', roomId, userId, offer);
+        }
     }
 }
 
 
+
 // Handle connection events
+// socket.on("connect", () => {
+//     if (isConnected) {
+//         console.log("Connected to server.");
+//     }else{
+//         console.log("Connected to server.");
+//         // alert("Reconnected successfully!");
+//     }
+//     isConnected = true;
+// });
+
+
 socket.on("connect", () => {
-    if (isConnected) {
-        console.log("Connected to server.");
-    }else{
-        console.log("Connected to server.");
-        // alert("Reconnected successfully!");
+    console.log("Connected to server.");
+    if (roomId) {
+        console.log(`Rejoining room: ${roomId}`);
+        socket.emit('joinRoom', roomId); // Rejoin the room
+        if (localStream) {
+            reconnect(); // Reinitialize WebRTC
+        }
     }
     isConnected = true;
 });
+
+
+
+
 socket.on("disconnect", () => {
     isConnected = false;
     console.log("Disconnected from server.");
