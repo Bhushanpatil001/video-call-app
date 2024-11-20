@@ -4,24 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Call</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
 </head>
-<body>
-    <div id="app">
-        <h1>Video Call Application</h1>
-        <div id="room" style="display:block;">
-            <input type="text" id="roomId" placeholder="Enter Room ID">
-            <button id="createRoomButton">Create Room</button>
-            <button id="joinRoomButton">Join Room</button>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div id="app" class="w-full max-w-2xl p-8 bg-white rounded-lg shadow-lg">
+        <h1 class="text-3xl font-bold text-blue-600 mb-8 text-center">Video Call Application</h1>
+
+        <!-- Room Section -->
+        <div id="room" class="space-y-6" style="display:block;">
+            <input 
+                type="text" 
+                id="roomId" 
+                placeholder="Enter Room ID" 
+                class="w-full p-4 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+            <div class="flex space-x-6">
+                <button 
+                    id="createRoomButton" 
+                    class="flex-1 bg-blue-600 text-white py-3 text-lg rounded-lg hover:bg-blue-700 transition"
+                >
+                    Create Room
+                </button>
+                <button 
+                    id="joinRoomButton" 
+                    class="flex-1 bg-green-600 text-white py-3 text-lg rounded-lg hover:bg-green-700 transition"
+                >
+                    Join Room
+                </button>
+            </div>
         </div>
 
-        <div id="callControls" style="display:none;">
-            <button id="startCallButton">Start Call</button>
+        <!-- Call Controls -->
+        <div id="callControls" class="mt-8" style="display:none;">
+            <button 
+                id="startCallButton" 
+                class="w-full bg-red-600 text-white py-3 text-lg rounded-lg hover:bg-red-700 transition"
+            >
+                Start Call
+            </button>
         </div>
 
-        <div id="videoGrid">
-            <video id="localVideo" autoplay muted></video>
-            <video id="remoteVideo" autoplay></video>
+        <!-- Video Grid -->
+        <div id="videoGrid" class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <video 
+                id="localVideo" 
+                autoplay muted 
+                class="w-full h-56 bg-black rounded-lg"
+            ></video>
+            <video 
+                id="remoteVideo" 
+                autoplay 
+                class="w-full h-56 bg-black rounded-lg"
+            ></video>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>

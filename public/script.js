@@ -1,4 +1,9 @@
-const socket = io();
+const socket = io({
+    reconnection: true, // Enable automatic reconnection
+    reconnectionAttempts: 5, // Retry 5 times before giving up
+    reconnectionDelay: 1000, // Initial delay between attempts (1 second)
+    reconnectionDelayMax: 5000, // Maximum delay (5 seconds)
+});
 
 // HTML Elements
 const usernameInput = document.getElementById('username');
@@ -16,6 +21,51 @@ let peerConnection;
 let userId;
 let roomId;
 
+let isConnected = false;
+
+// Monitor network status
+function updateNetworkStatus() {
+    if (navigator.onLine) {
+        console.log("Network is online.");
+        if (!isConnected) {
+            reconnect();
+        }
+    } else {
+        console.log("Network is offline. Waiting for reconnection...");
+        alert("You are offline. The app will reconnect automatically once the network is restored.");
+    }
+}
+
+// updating network state on itrruption state
+window.addEventListener("online", updateNetworkStatus);
+window.addEventListener("offline", updateNetworkStatus);
+
+
+// Attempt to reconnect
+function reconnect() {
+    if (!isConnected) {
+        console.log("Attempting to reconnect...");
+        socket.connect(); // Reconnect the Socket.IO client
+    }
+}
+
+
+// Handle connection events
+socket.on("connect", () => {
+    if (isConnected) {
+        console.log("Connected to server.");
+    }else{
+        console.log("Connected to server.");
+        // alert("Reconnected successfully!");
+    }
+    isConnected = true;
+});
+socket.on("disconnect", () => {
+    isConnected = false;
+    console.log("Disconnected from server.");
+    alert("Disconnected from the server. Attempting to reconnect...");
+});
+
 // ICE Servers Configuration
 const config = {
     iceServers: [
@@ -29,7 +79,7 @@ if (registerButton) {
     registerButton.addEventListener('click', () => {
         const username = usernameInput.value.trim();
         const UserHtml = () => {
-            
+
         }
         if (username) {
             socket.emit('registerUser', username);

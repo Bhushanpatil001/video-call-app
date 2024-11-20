@@ -23,6 +23,7 @@ io.on('connection', (socket) => {
     socket.on('registerUser', (username) => {
         users[socket.id] = username;
         console.log(`${username} registered with ID: ${socket.id}`);
+        console.log({users});
         socket.emit('userRegistered', socket.id);
     });
 
@@ -49,6 +50,8 @@ socket.on('joinRoom', (roomId) => {
     }
     rooms[roomId].push(userId);
     socket.join(roomId);  // Join the room
+    console.log("users", users);
+    console.log("rooms", rooms);
 
     // You can optionally emit back to the client the list of users in the room if needed
     socket.emit('joinedRoom', roomId, userId);  // Inform the client they've joined

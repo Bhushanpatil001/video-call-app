@@ -4,15 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Call App - Registration</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <h1>Welcome to the Video Call App</h1>
-    <div id="registration">
-        <input type="text" id="username" placeholder="Enter your name">
-        <button id="registerButton">Register</button>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="text-center p-6 bg-white rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold text-blue-600 mb-4">Welcome to the Video Call App</h1>
+        <div id="registration" class="space-y-4">
+            <input 
+                type="text" 
+                id="username" 
+                placeholder="Enter your name" 
+                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            >
+            <button 
+                id="registerButton" 
+                class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+                Register
+            </button>
+        </div>
     </div>
-
     <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
 </body>
