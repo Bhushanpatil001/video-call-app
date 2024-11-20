@@ -28,6 +28,9 @@ const config = {
 if (registerButton) {
     registerButton.addEventListener('click', () => {
         const username = usernameInput.value.trim();
+        const UserHtml = () => {
+            
+        }
         if (username) {
             socket.emit('registerUser', username);
         }
@@ -55,11 +58,22 @@ if (createRoomButton) {
     });
 
     // Join Room
+    // joinRoomButton.addEventListener('click', () => {
+    //     console.log("in Join User ",userId);
+    //     roomId = roomIdInput.value.trim();
+    //     if (roomId) {
+    //         socket.emit('joinRoom', roomId, userId);
+    //         console.log(`Joined room: ${roomId}`);
+    //         document.getElementById('room').style.display = 'none';
+    //         document.getElementById('callControls').style.display = 'block';
+    //     }
+    // });
+
     joinRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
-            socket.emit('joinRoom', roomId, userId);
-            console.log(`Joined room: ${roomId}`);
+            console.log(`Joining room: ${roomId}`);  // Debugging log
+            socket.emit('joinRoom', roomId);  // Emit only roomId, userId is automatically handled on the server
             document.getElementById('room').style.display = 'none';
             document.getElementById('callControls').style.display = 'block';
         }

@@ -1,27 +1,21 @@
 const express = require('express');
-const https = require('https');
-const fs = require('fs');
+const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 
-// Load SSL credentials
-const privateKey = fs.readFileSync('path/to/your/private-key.pem', 'utf8');
-const certificate = fs.readFileSync('path/to/your/certificate.crt', 'utf8');
-const credentials = { key: privateKey, cert: certificate };
 
-// Initialize Express app
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
+
 app.use(cors());
-app.use(express.static('public'));
-
-// Create HTTPS server on port 4000
-const httpsServer = https.createServer(credentials, app);
-const io = socketIo(httpsServer);
-
 const rooms = {};
 const users = {};
 
-// Socket.io handling
+// Serve static files
+app.use(express.static('public'));
+
+// Socket.io
 io.on('connection', (socket) => {
     console.log(`New connection: ${socket.id}`);
 
@@ -33,14 +27,32 @@ io.on('connection', (socket) => {
     });
 
     // Join Room
-    socket.on('joinRoom', (roomId, userId) => {
-        if (!rooms[roomId]) {
-            rooms[roomId] = [];
-        }
-        rooms[roomId].push(userId);
-        socket.join(roomId);
-        console.log(`${userId} joined room ${roomId}`);
-    });
+    // socket.on('joinRoom', (roomId, userId) => {
+    //     console.log("Room Id : " + roomId + "userID" + userId);
+    //     if (!rooms[roomId]) {
+    //         rooms[roomId] = [];
+    //     }
+    //     rooms[roomId].push(userId);
+    //     socket.join(roomId);
+    //     console.log(`${userId} joined room ${roomId}`);
+    // });
+
+
+    // Join Room
+socket.on('joinRoom', (roomId) => {
+    // Use socket.id as the userId
+    const userId = socket.id;
+    console.log(`${userId} joined room ${roomId}`);
+
+    if (!rooms[roomId]) {
+        rooms[roomId] = [];
+    }
+    rooms[roomId].push(userId);
+    socket.join(roomId);  // Join the room
+
+    // You can optionally emit back to the client the list of users in the room if needed
+    socket.emit('joinedRoom', roomId, userId);  // Inform the client they've joined
+});
 
     // Handle WebRTC Signaling
     socket.on('offer', (roomId, userId, offer) => {
@@ -62,7 +74,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// Start HTTPS Server on port 4000
-httpsServer.listen(4000, () => {
-    console.log('Server running on https://localhost:4000');
+// Start Server
+server.listen(4000, () => {
+    console.log('Server running on port 4000');
 });
