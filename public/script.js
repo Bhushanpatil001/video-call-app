@@ -32,7 +32,7 @@ function updateNetworkStatus() {
         }
     } else {
         // console.log("Network is offline. Waiting for reconnection...");
-        alert("You are offline. The app will reconnect automatically once the network is restored.");
+        // alert("You are offline. The app will reconnect automatically once the network is restored.");
     }
 }
 
