@@ -103,8 +103,8 @@ socket.on("connect", () => {
 
 socket.on("disconnect", () => {
     isConnected = false;
-    // console.log("Disconnected from server.");
-    alert("Disconnected from the server, or due to network Error. Attempting to reconnect...");
+    console.log("Disconnected from server.");
+    // alert("Disconnected from the server, or due to network Error. Attempting to reconnect...");
 });
 
 // ICE Servers Configuration
