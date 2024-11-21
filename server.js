@@ -17,13 +17,13 @@ app.use(express.static('public'));
 
 // Socket.io
 io.on('connection', (socket) => {
-    console.log(`New connection: ${socket.id}`);
+    // console.log(`New connection: ${socket.id}`);
 
     // Register User
     socket.on('registerUser', (username) => {
         users[socket.id] = username;
-        console.log(`${username} registered with ID: ${socket.id}`);
-        console.log({users});
+        // console.log(`${username} registered with ID: ${socket.id}`);
+        // console.log({users});
         socket.emit('userRegistered', socket.id);
     });
 
@@ -60,9 +60,16 @@ io.on('connection', (socket) => {
 
     socket.on('joinRoom', (roomId) => {
         if (!rooms[roomId]) rooms[roomId] = [];
-            if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
-            socket.join(roomId);
-        console.log(`${socket.id} rejoined room ${roomId}`);
+        
+        if(rooms[roomId].length === 2){
+            console.log('Room is full. Cannot join');
+            socket.emit("roomFull", roomId);
+            return;
+        }
+        
+        if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
+        socket.join(roomId);
+        // console.log(`${socket.id} rejoined room ${roomId}`);
         console.log('users in room', roomId, rooms[roomId]);
     });
 
@@ -81,8 +88,9 @@ io.on('connection', (socket) => {
 
     // Disconnect
     socket.on('disconnect', () => {
-    console.log(`${socket.id} disconnected`);
-    console.log(rooms);
+    // console.log(`${socket.id} disconnected`);
+    console.log('users in room', roomId, rooms[roomId]);
+    // console.log(rooms);
         Object.keys(rooms).forEach((roomId) => {
             rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
         });

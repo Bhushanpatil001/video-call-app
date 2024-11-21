@@ -26,12 +26,12 @@ let isConnected = false;
 // Monitor network status
 function updateNetworkStatus() {
     if (navigator.onLine) {
-        console.log("Network is online.");
+        // console.log("Network is online.");
         if (!isConnected) {
             reconnect();
         }
     } else {
-        console.log("Network is offline. Waiting for reconnection...");
+        // console.log("Network is offline. Waiting for reconnection...");
         alert("You are offline. The app will reconnect automatically once the network is restored.");
     }
 }
@@ -44,7 +44,7 @@ window.addEventListener("offline", updateNetworkStatus);
 // Attempt to reconnect
 async function reconnect() {
     if (!isConnected) {
-        console.log("Attempting to reconnect...");
+        // console.log("Attempting to reconnect...");
         socket.connect(); // Reconnect the Socket.IO client
 
         // Reinitialize WebRTC peer connection
@@ -87,7 +87,7 @@ async function reconnect() {
 
 
 socket.on("connect", () => {
-    console.log("Connected to server.");
+    // console.log("Connected to server.");
     if (roomId) {
         console.log(`Rejoining room: ${roomId}`);
         socket.emit('joinRoom', roomId); // Rejoin the room
@@ -103,8 +103,8 @@ socket.on("connect", () => {
 
 socket.on("disconnect", () => {
     isConnected = false;
-    console.log("Disconnected from server.");
-    alert("Disconnected from the server. Attempting to reconnect...");
+    // console.log("Disconnected from server.");
+    alert("Disconnected from the server, or due to network Error. Attempting to reconnect...");
 });
 
 // ICE Servers Configuration
@@ -129,7 +129,7 @@ if (registerButton) {
 
     socket.on('userRegistered', (id) => {
         userId = id;
-        console.log(`Registered as ${userId}`);
+        // console.log(`Registered as ${userId}`);
         // Redirect to the video call page after successful registration
         window.location.href = 'video-call.html';
     });
@@ -141,7 +141,10 @@ if (createRoomButton) {
     createRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
-            
+            socket.on("roomFull", roomId => {
+                alert("Room is Full, Create new Room or join Different room");
+                window.location.href = "index.html";
+            })
             socket.emit('joinRoom', roomId, userId);
             console.log(`Created room: ${roomId}`);
             document.getElementById('room').style.display = 'none';
@@ -164,8 +167,11 @@ if (createRoomButton) {
     joinRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
-           
-            console.log(`Joining room: ${roomId}`);  // Debugging log
+            socket.on("roomFull", roomId => {
+                alert("Room is Full, Create new Room or join Different room");
+                window.location.href = "index.html";
+            })
+            // console.log(`Joining room: ${roomId}`);  // Debugging log
             socket.emit('joinRoom', roomId);  // Emit only roomId, userId is automatically handled on the server
             document.getElementById('room').style.display = 'none';
             document.getElementById('callControls').style.display = 'block';
@@ -198,7 +204,7 @@ if (createRoomButton) {
 
     // Handle Incoming Calls (Offer)
     socket.on('offerReceived', async (senderId, offer) => {
-        console.log(`Offer received from ${senderId}`);
+        // console.log(`Offer received from ${senderId}`);
         peerConnection = new RTCPeerConnection(config);
 
         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
