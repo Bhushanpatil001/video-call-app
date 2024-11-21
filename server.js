@@ -65,9 +65,9 @@ io.on('connection', (socket) => {
             console.log('Room is full. Cannot join');
             socket.emit("roomFull", roomId);
             return;
+        }else{
+            if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
         }
-        
-        if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
         socket.join(roomId);
         // console.log(`${socket.id} rejoined room ${roomId}`);
         console.log('users in room', roomId, rooms[roomId]);
