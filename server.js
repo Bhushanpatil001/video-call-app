@@ -60,9 +60,10 @@ io.on('connection', (socket) => {
 
     socket.on('joinRoom', (roomId) => {
         if (!rooms[roomId]) rooms[roomId] = [];
-        if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
-        socket.join(roomId);
+            if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
+            socket.join(roomId);
         console.log(`${socket.id} rejoined room ${roomId}`);
+        console.log('users in room', roomId, rooms[roomId]);
     });
 
     // Handle WebRTC Signaling
@@ -81,6 +82,7 @@ io.on('connection', (socket) => {
     // Disconnect
     socket.on('disconnect', () => {
     console.log(`${socket.id} disconnected`);
+    console.log(rooms);
         Object.keys(rooms).forEach((roomId) => {
             rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
         });

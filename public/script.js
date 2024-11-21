@@ -141,6 +141,7 @@ if (createRoomButton) {
     createRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
+            
             socket.emit('joinRoom', roomId, userId);
             console.log(`Created room: ${roomId}`);
             document.getElementById('room').style.display = 'none';
@@ -163,6 +164,7 @@ if (createRoomButton) {
     joinRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
+           
             console.log(`Joining room: ${roomId}`);  // Debugging log
             socket.emit('joinRoom', roomId);  // Emit only roomId, userId is automatically handled on the server
             document.getElementById('room').style.display = 'none';
