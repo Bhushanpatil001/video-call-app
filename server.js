@@ -89,7 +89,7 @@ io.on('connection', (socket) => {
     // Disconnect
     socket.on('disconnect', () => {
     // console.log(`${socket.id} disconnected`);
-    console.log('users in room', roomId, rooms[roomId]);
+    // console.log('users in room', roomId, rooms[roomId]);
     // console.log(rooms);
         Object.keys(rooms).forEach((roomId) => {
             rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
