@@ -141,6 +141,10 @@ if (createRoomButton) {
     createRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
+            socket.on("roomFull", roomId => {
+                window.location.href = "index.html";
+                alert(`${roomId}Room is full. Please try again.`);
+            })
             socket.emit('joinRoom', roomId, userId);
             console.log(`Created room: ${roomId}`);
             document.getElementById('room').style.display = 'none';
@@ -163,6 +167,10 @@ if (createRoomButton) {
     joinRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
+            socket.on("roomFull", roomId => {
+                window.location.href = "index.html"
+                alert(`${roomId}Room is full. Please try again.`);
+            })
             console.log(`Joining room: ${roomId}`);  // Debugging log
             socket.emit('joinRoom', roomId);  // Emit only roomId, userId is automatically handled on the server
             document.getElementById('room').style.display = 'none';
