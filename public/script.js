@@ -141,16 +141,11 @@ if (createRoomButton) {
     createRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
+            socket.emit('joinRoom', roomId);
             socket.on("roomFull", roomId => {
-                alert("Room is Full, Create new Room or join Different room");
+                alert(`${roomId} Room is Full, Create new Room or join Different room`);
                 window.location.href = "index.html";
             })
-            socket.emit('joinRoom', roomId =>{
-                socket.on("roomFull", roomId => {
-                    alert("Room is Full, Create new Room or join Different room");
-                    window.location.href = "index.html";
-                })
-            });
             console.log(`Created room: ${roomId}`);
             document.getElementById('room').style.display = 'none';
             document.getElementById('callControls').style.display = 'block';
@@ -172,17 +167,12 @@ if (createRoomButton) {
     joinRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
         if (roomId) {
-            // socket.on("roomFull", roomId => {
-            //     alert("Room is Full, Create new Room or join Different room");
-            //     window.location.href = "index.html";
-            // })
             // console.log(`Joining room: ${roomId}`);  // Debugging log
-            socket.emit('joinRoom', roomId =>{
-                socket.on("roomFull", roomId => {
-                    alert("Room is Full, Create new Room or join Different room");
-                    window.location.href = "index.html";
-                })
-            });  // Emit only roomId, userId is automatically handled on the server
+            socket.emit('joinRoom', roomId);  // Emit only roomId, userId is automatically handled on the server
+            socket.on("roomFull", roomId => {
+                alert(`${roomId} Room is Full, Create new Room or join Different room`);
+                window.location.href = "index.html";
+            })
             document.getElementById('room').style.display = 'none';
             document.getElementById('callControls').style.display = 'block';
         }
