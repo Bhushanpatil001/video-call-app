@@ -30,7 +30,6 @@ function updateNetworkStatus() {
         if (!isConnected) {
             reconnect();
         }
-        peerConnection.restartIce();
     } else {
         // console.log("Network is offline. Waiting for reconnection...");
         // alert("You are offline. The app will reconnect automatically once the network is restored.");
@@ -48,39 +47,11 @@ async function reconnect() {
         // console.log("Attempting to reconnect...");
         socket.connect(); // Reconnect the Socket.IO client
 
-        if (peerConnection) {
-            peerConnection.close(); // Close previous connection before creating a new one
-            peerConnection = null;
-        }
-
         // Reinitialize WebRTC peer connection
         if (localStream) {
             peerConnection = new RTCPeerConnection(config);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-            // Handle ICE state changes
-            peerConnection.oniceconnectionstatechange = () => {
-                const state = peerConnection.iceConnectionState;
-                console.log('ICE Connection State:', state);
-            
-                // Handle disconnection or failure states
-                if (state === 'disconnected' || state === 'failed') {
-                    console.log('Connection lost. Attempting ICE restart...');
-                    peerConnection.restartIce(); // Restart ICE to handle the new network
-                }
-            };
-
-            // Handle connection state changes
-            peerConnection.onconnectionstatechange = () => {
-                const state = peerConnection.connectionState;
-                console.log('Connection State:', state);
-            
-                if (state === 'disconnected' || state === 'failed') {
-                    console.log('Connection lost. Attempting reconnection...');
-                    handleReconnection();
-                }
-            };
-        
             // Handle new ICE candidates
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
@@ -116,11 +87,12 @@ async function reconnect() {
 
 
 socket.on("connect", () => {
+    // console.log("Connected to server.");
     if (roomId) {
         console.log(`Rejoining room: ${roomId}`);
-        socket.emit('joinRoom', roomId); // Rejoin the room after reconnection
+        socket.emit('joinRoom', roomId); // Rejoin the room
         if (localStream) {
-            reconnect(); // Reinitialize WebRTC if needed
+            reconnect(); // Reinitialize WebRTC
         }
     }
     isConnected = true;
@@ -128,15 +100,11 @@ socket.on("connect", () => {
 
 
 
+
 socket.on("disconnect", () => {
     isConnected = false;
     console.log("Disconnected from server.");
-    // Cleanup video streams
-    if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-    }
-    remoteVideo.srcObject = null;
+    // alert("Disconnected from the server, or due to network Error. Attempting to reconnect...");
 });
 
 // ICE Servers Configuration
@@ -170,9 +138,9 @@ if (registerButton) {
 // Room & Video Call Operations (in video-call.html)
 if (createRoomButton || joinRoomButton) {
     socket.on("roomFull", roomId => {
-        alert(`${roomId} Room is Full. Create a new Room or join a different one.`);
-        window.location.href = "index.html"; // Redirect to the main page to try again
-    });    
+        alert(`${roomId} Room is Full, Create new Room or join Different room`);
+        window.location.href = "index.html";
+    })
     // Create Room
     createRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
