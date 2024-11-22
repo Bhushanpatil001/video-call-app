@@ -59,18 +59,29 @@ io.on('connection', (socket) => {
 
 
     socket.on('joinRoom', (roomId) => {
-        if (!rooms[roomId]) rooms[roomId] = [];
-        
-        if(rooms[roomId].length === 2){
+        if (!rooms[roomId]) {
+            rooms[roomId] = [];
+        }
+
+        // Check if the room is full
+        if (rooms[roomId].length === 2) {
             console.log('Room is full. Cannot join');
             socket.emit("roomFull", roomId);
             return;
-        }else{
-            if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
+        } else {
+            // Add user to the room
+            if (!rooms[roomId].includes(socket.id)) {
+                rooms[roomId].push(socket.id);
+            }
         }
+
+        // Join the room
         socket.join(roomId);
-        // console.log(`${socket.id} rejoined room ${roomId}`);
-        console.log('users in room', roomId, rooms[roomId]);
+        console.log(`${socket.id} joined room ${roomId}`);
+        console.log('Users in room', roomId, rooms[roomId]);
+
+        // Notify the user that they have joined the room
+        socket.emit('joinedRoom', roomId);
     });
 
     // Handle WebRTC Signaling
@@ -86,15 +97,27 @@ io.on('connection', (socket) => {
         socket.to(roomId).emit('iceCandidate', userId, candidate);
     });
 
+    // Handle Reconnection
+    socket.on('reconnect', () => {
+        // Check if the user is part of any rooms and rejoin them
+        for (let roomId in rooms) {
+            if (rooms[roomId].includes(socket.id)) {
+                socket.join(roomId);
+                console.log(`${socket.id} rejoined room ${roomId}`);
+            }
+        }
+    });
+
     // Disconnect
     socket.on('disconnect', () => {
-    // console.log(`${socket.id} disconnected`);
-    // console.log('users in room', roomId, rooms[roomId]);
-    // console.log(rooms);
+        // Remove user from rooms
         Object.keys(rooms).forEach((roomId) => {
             rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
         });
-    delete users[socket.id];
+
+        // Remove the user from the users list
+        delete users[socket.id];
+        console.log(`${socket.id} disconnected`);
     });
 });
 

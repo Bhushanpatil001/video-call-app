@@ -48,6 +48,11 @@ async function reconnect() {
         // console.log("Attempting to reconnect...");
         socket.connect(); // Reconnect the Socket.IO client
 
+        if (peerConnection) {
+            peerConnection.close(); // Close previous connection before creating a new one
+            peerConnection = null;
+        }
+
         // Reinitialize WebRTC peer connection
         if (localStream) {
             peerConnection = new RTCPeerConnection(config);
@@ -58,12 +63,12 @@ async function reconnect() {
                 const state = peerConnection.iceConnectionState;
                 console.log('ICE Connection State:', state);
             
+                // Handle disconnection or failure states
                 if (state === 'disconnected' || state === 'failed') {
                     console.log('Connection lost. Attempting ICE restart...');
-                    peerConnection.restartIce(); // Restart ICE
+                    peerConnection.restartIce(); // Restart ICE to handle the new network
                 }
             };
-
 
             // Handle connection state changes
             peerConnection.onconnectionstatechange = () => {
@@ -111,12 +116,11 @@ async function reconnect() {
 
 
 socket.on("connect", () => {
-    // console.log("Connected to server.");
     if (roomId) {
         console.log(`Rejoining room: ${roomId}`);
-        socket.emit('joinRoom', roomId); // Rejoin the room
+        socket.emit('joinRoom', roomId); // Rejoin the room after reconnection
         if (localStream) {
-            reconnect(); // Reinitialize WebRTC
+            reconnect(); // Reinitialize WebRTC if needed
         }
     }
     isConnected = true;
@@ -124,11 +128,15 @@ socket.on("connect", () => {
 
 
 
-
 socket.on("disconnect", () => {
     isConnected = false;
     console.log("Disconnected from server.");
-    // alert("Disconnected from the server, or due to network Error. Attempting to reconnect...");
+    // Cleanup video streams
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    remoteVideo.srcObject = null;
 });
 
 // ICE Servers Configuration
@@ -162,9 +170,9 @@ if (registerButton) {
 // Room & Video Call Operations (in video-call.html)
 if (createRoomButton || joinRoomButton) {
     socket.on("roomFull", roomId => {
-        alert(`${roomId} Room is Full, Create new Room or join Different room`);
-        window.location.href = "index.html";
-    })
+        alert(`${roomId} Room is Full. Create a new Room or join a different one.`);
+        window.location.href = "index.html"; // Redirect to the main page to try again
+    });    
     // Create Room
     createRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
