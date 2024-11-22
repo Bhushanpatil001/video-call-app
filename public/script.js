@@ -30,6 +30,7 @@ function updateNetworkStatus() {
         if (!isConnected) {
             reconnect();
         }
+        peerConnection.restartIce();
     } else {
         // console.log("Network is offline. Waiting for reconnection...");
         // alert("You are offline. The app will reconnect automatically once the network is restored.");
@@ -52,6 +53,29 @@ async function reconnect() {
             peerConnection = new RTCPeerConnection(config);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
+            // Handle ICE state changes
+            peerConnection.oniceconnectionstatechange = () => {
+                const state = peerConnection.iceConnectionState;
+                console.log('ICE Connection State:', state);
+            
+                if (state === 'disconnected' || state === 'failed') {
+                    console.log('Connection lost. Attempting ICE restart...');
+                    peerConnection.restartIce(); // Restart ICE
+                }
+            };
+
+
+            // Handle connection state changes
+            peerConnection.onconnectionstatechange = () => {
+                const state = peerConnection.connectionState;
+                console.log('Connection State:', state);
+            
+                if (state === 'disconnected' || state === 'failed') {
+                    console.log('Connection lost. Attempting reconnection...');
+                    handleReconnection();
+                }
+            };
+        
             // Handle new ICE candidates
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
