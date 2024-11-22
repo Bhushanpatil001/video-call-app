@@ -49,11 +49,6 @@ async function reconnect() {
 
         // Reinitialize WebRTC peer connection
         if (localStream) {
-
-            if(peerConnection){
-                peerConnection.restartIce();
-            }
-            else{
             peerConnection = new RTCPeerConnection(config);
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
@@ -68,7 +63,6 @@ async function reconnect() {
             peerConnection.ontrack = (event) => {
                 remoteVideo.srcObject = event.streams[0];
             };
-            }
             // Renegotiate the session
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
