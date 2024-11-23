@@ -10,91 +10,69 @@ const io = socketIo(server);
 
 app.use(cors());
 const rooms = {};
-const users = {};
+let disconnectedSockets = {}; // Track disconnected socket IDs
+// const users = {};
 
 // Serve static files
 app.use(express.static('public'));
 
 // Socket.io
-io.on('connection', (socket) => {
-    // console.log(`New connection: ${socket.id}`);
+io.on('connection', socket => {
+    let roomId;
 
-    // Register User
-    socket.on('registerUser', (username) => {
-        users[socket.id] = username;
-        // console.log(`${username} registered with ID: ${socket.id}`);
-        // console.log({users});
-        socket.emit('userRegistered', socket.id);
-    });
+    // User joins a room
+    socket.on('joinRoom', (room) => {
+        roomId = room;
 
-    // Join Room
-    // socket.on('joinRoom', (roomId, userId) => {
-    //     console.log("Room Id : " + roomId + "userID" + userId);
-    //     if (!rooms[roomId]) {
-    //         rooms[roomId] = [];
-    //     }
-    //     rooms[roomId].push(userId);
-    //     socket.join(roomId);
-    //     console.log(`${userId} joined room ${roomId}`);
-    // });
-
-
-    // Join Room
-    // socket.on('joinRoom', (roomId) => {
-    //     // Use socket.id as the userId
-    //     const userId = socket.id;
-    //     console.log(`${userId} joined room ${roomId}`);
-
-    //     if (!rooms[roomId]) {
-    //         rooms[roomId] = [];
-    //     }
-    //     rooms[roomId].push(userId);
-    //     socket.join(roomId);  // Join the room
-    //     console.log("users", users);
-    //     console.log("rooms", rooms);
-
-    //     // You can optionally emit back to the client the list of users in the room if needed
-    //     socket.emit('joinedRoom', roomId, userId);  // Inform the client they've joined
-    // });
-
-
-    socket.on('joinRoom', (roomId) => {
-        if (!rooms[roomId]) rooms[roomId] = [];
-        
-        if(rooms[roomId].length === 2){
-            console.log('Room is full. Cannot join');
-            socket.emit("roomFull", roomId);
-            return;
-        }else{
-            if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
+        // Initialize room if it doesn't exist
+        if (!rooms[roomId]) {
+            rooms[roomId] = [];
         }
-        socket.join(roomId);
-        // console.log(`${socket.id} rejoined room ${roomId}`);
-        console.log('users in room', roomId, rooms[roomId]);
-    });
 
-    // Handle WebRTC Signaling
-    socket.on('offer', (roomId, userId, offer) => {
-        socket.to(roomId).emit('offerReceived', userId, offer);
-    });
+        // Check if room is full (max 2 users per room)
+        if (rooms[roomId].length >= 2) {
+            socket.emit('roomFull', 'Room is full, cannot join');
+            return;
+        }
 
-    socket.on('answer', (roomId, userId, answer) => {
-        socket.to(roomId).emit('answerReceived', userId, answer);
-    });
+        // Add the socket to the room
+        rooms[roomId].push(socket.id);
+        console.log(`Socket ${socket.id} joined room ${roomId}`);
 
-    socket.on('iceCandidate', (roomId, userId, candidate) => {
-        socket.to(roomId).emit('iceCandidate', userId, candidate);
-    });
-
-    // Disconnect
-    socket.on('disconnect', () => {
-    // console.log(`${socket.id} disconnected`);
-    // console.log('users in room', roomId, rooms[roomId]);
-    // console.log(rooms);
-        Object.keys(rooms).forEach((roomId) => {
-            rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
+        // Forward signaling data
+        socket.on('offer', (offer) => {
+            socket.broadcast.to(roomId).emit('offerReceived', socket.id, offer);
         });
-    delete users[socket.id];
+
+        socket.on('answer', (answer) => {
+            socket.broadcast.to(roomId).emit('answerReceived', socket.id, answer);
+        });
+
+        socket.on('iceCandidate', (candidate) => {
+            socket.broadcast.to(roomId).emit('iceCandidate', socket.id, candidate);
+        });
+
+        // Handle disconnection
+        socket.on('disconnect', () => {
+            console.log(`Socket ${socket.id} disconnected`);
+            rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
+            disconnectedSockets[socket.id] = true; // Mark socket as disconnected
+        });
+
+        // Handle reconnection attempt
+        socket.on('reconnect', () => {
+            if (disconnectedSockets[socket.id]) {
+                // Allow reconnection only if the socket was disconnected
+                if (!rooms[roomId].includes(socket.id)) {
+                    rooms[roomId].push(socket.id);
+                    console.log(`Socket ${socket.id} reconnected to room ${roomId}`);
+                    delete disconnectedSockets[socket.id]; // Remove from disconnectedSockets
+                    socket.emit('newOffer', roomId); // Send a new offer
+                }
+            } else {
+                socket.emit('roomFull', 'Room is full, cannot join');
+            }
+        });
     });
 });
 
