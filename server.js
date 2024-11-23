@@ -47,6 +47,8 @@ io.on('connection', socket => {
         rooms[roomId].push(socket.id);
         console.log(`Socket ${socket.id} joined room ${roomId}`);
 
+        socket.join(roomId);
+    });
         // Forward signaling data
         socket.on('offer', (offer) => {
             socket.broadcast.to(roomId).emit('offerReceived', socket.id, offer);
@@ -81,7 +83,7 @@ io.on('connection', socket => {
                 socket.emit('roomFull', 'Room is full, cannot join');
             }
         });
-    });
+    
 });
 
 // Start Server
