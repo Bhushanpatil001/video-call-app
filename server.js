@@ -10,6 +10,7 @@ const io = socketIo(server);
 
 app.use(cors());
 const rooms = {};
+const users = {};
 let disconnectedSockets = {}; // Track disconnected socket IDs
 // const users = {};
 
@@ -18,8 +19,15 @@ app.use(express.static('public'));
 
 // Socket.io
 io.on('connection', socket => {
+    console.log('a new client connected');
     let roomId;
 
+    socket.on('registerUser', (username) => {
+        users[socket.id] = username;
+        // console.log(`${username} registered with ID: ${socket.id}`);
+        // console.log({users});
+        socket.emit('userRegistered', socket.id);
+    });
     // User joins a room
     socket.on('joinRoom', (room) => {
         roomId = room;
