@@ -25,6 +25,10 @@ io.on('connection', (socket) => {
     // Join Room
     socket.on('joinRoom', (roomId) => {
         if (!rooms[roomId]) rooms[roomId] = [];
+        if (rooms[roomId].length >= 2) {
+            socket.emit('roomFull', 'Room is full, cannot join');
+            return;
+        }
         if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
         socket.join(roomId);
     });

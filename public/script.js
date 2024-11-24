@@ -118,6 +118,12 @@ if (registerButton) {
 
 // Room Operations
 if (createRoomButton || joinRoomButton) {
+    socket.on('roomFull', (roomId) => {
+        console.log(`Room ${roomId} is full.`)
+        alert(`${roomId} Room is Full, Create new Room or join Different room`);
+
+        window.location.href = "index.html";
+    })
     // Create Room
     createRoomButton.addEventListener('click', () => {
         roomId = roomIdInput.value.trim();
