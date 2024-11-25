@@ -30,6 +30,7 @@ io.on('connection', (socket) => {
             return;
         }
         if (!rooms[roomId].includes(socket.id)) rooms[roomId].push(socket.id);
+        socket.roomId = roomId; // Track roomId for this socket
         socket.join(roomId);
     });
 
@@ -62,6 +63,25 @@ io.on('connection', (socket) => {
     socket.on('iceCandidate', (roomId, userId, candidate) => {
         socket.to(roomId).emit('iceCandidate', userId, candidate);
     });
+
+    socket.on('disconnect', () => {
+        console.log(`${socket.id} disconnected`);
+
+        const roomId = socket.roomId; // Get the roomId associated with this socket
+        if (roomId && rooms[roomId]) {
+            // Remove the socket from the room
+            rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
+
+            // Delete the room if it's empty
+            if (rooms[roomId].length === 0) {
+                delete rooms[roomId];
+            }
+        }
+
+        console.log(rooms);
+        
+    });
+
 });
 
 server.listen(4000, () => {
