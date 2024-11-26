@@ -37,6 +37,7 @@ io.on('connection', (socket) => {
     // Handle User Disconnection
     socket.on('userDisconnected', (roomId, userId) => {
         disconnectedUsers[userId] = roomId;
+        rooms[roomId] = rooms[roomId].filter(id => id !== userId);
         socket.leave(roomId);
         console.log(`User ${userId} disconnected.`);
     });
@@ -67,19 +68,17 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log(`${socket.id} disconnected`);
 
-        const roomId = socket.roomId; // Get the roomId associated with this socket
-        if (roomId && rooms[roomId]) {
-            // Remove the socket from the room
+        // const roomId = socket.roomId; // Get the roomId associated with this socket
+         // Iterate over all rooms to remove the disconnected socket
+         Object.keys(rooms).forEach((roomId) => {
             rooms[roomId] = rooms[roomId].filter(id => id !== socket.id);
-
-            // Delete the room if it's empty
+            // If the room becomes empty, optionally delete it
             if (rooms[roomId].length === 0) {
                 delete rooms[roomId];
+                console.log(`Room ${roomId} is now empty and has been deleted.`);
             }
-        }
-
+        });
         console.log(rooms);
-        
     });
 
 });
