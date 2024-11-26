@@ -94,11 +94,19 @@ socket.on('disconnect', () => {
     isConnected = false;
 });
 
+const iceServers = [
+    {
+        urls: ["stun:167.99.121.56:3478"],
+    },
+    {
+        urls: "turn:167.99.121.56:3478", // TURN server URL
+        username: "myturnserver", // User defined in turnserver.conf
+        credential: "FskdjbbSFCsRcWRFfc3TG4g4456yg4EGE", // Password defined in turnserver.conf
+    }
+]
 // ICE Servers Configuration
 const config = {
-    iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }
-    ]
+    iceServers: iceServers,
 };
 
 // Register User
