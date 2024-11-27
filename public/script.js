@@ -95,9 +95,9 @@ socket.on('disconnect', () => {
 });
 
 const iceServers = [
-    {
-        urls: ["stun:167.99.121.56:3478"],
-    },
+    // {
+    //     urls: ["stun:167.99.121.56:3478"],
+    // },
     // {
     //     urls: "turn:167.99.121.56:3478", // TURN server URL
     //     username: "myturnserver", // User defined in turnserver.conf
