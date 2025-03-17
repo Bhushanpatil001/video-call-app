@@ -96,7 +96,7 @@ socket.on('disconnect', () => {
 
 const iceServers = [
     {
-        urls: ["stun:167.99.121.56:3478"],
+        urls: ["stun1.l.google.com:19302"],
     },
     {
         urls: "turn:167.99.121.56:3478", // TURN server URL
