@@ -95,13 +95,15 @@ socket.on('disconnect', () => {
 });
 
 const iceServers = [
-    {
-        urls: ["stun1.l.google.com:19302"],
-    },
-    {
-        urls: "turn:167.99.121.56:3478", // TURN server URL
-        username: "myturnserver", // User defined in turnserver.conf
-        credential: "FskdjbbSFCsRcWRFfc3TG4g4456yg4EGE", // Password defined in turnserver.conf
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+    { urls: "stun:stun2.l.google.com:19302" },
+    { urls: "stun:stun3.l.google.com:19302" },
+    { urls: "stun:stun4.l.google.com:19302" },
+    { 
+        urls: "turn:relay1.expressturn.com:3478",
+        username: "efree-turn",
+        credential: "free" 
     }
 ]
 // ICE Servers Configuration
